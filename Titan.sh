@@ -22,6 +22,7 @@ download_node() {
   done
 
   echo -e "Всі порти вільні! Починається встановлення...\n"
+
   echo 'Починаю встановлення...'
 
   cd $HOME
@@ -63,38 +64,43 @@ launch_node() {
     echo 'HASH не може бути порожнім.'
   done
 
-  docker run --network=host -d -v $HOME/.titanedge:$HOME/.titanedge nezha123/titan-edge
+  docker run --network=host -d -v ~/.titanedge:$HOME/.titanedge nezha123/titan-edge
   sleep 10
 
-  docker run --rm -it -v $HOME/.titanedge:$HOME/.titanedge nezha123/titan-edge bind --hash=$HASH https://api-test1.container1.titannet.io/api/v2/device/binding
+  docker run --rm -it -v ~/.titanedge:$HOME/.titanedge nezha123/titan-edge bind --hash=$HASH https://api-test1.container1.titannet.io/api/v2/device/binding
 
   echo -e "Ноду запущено."
 }
 
-clear
-channel_logo
+delete_node() {
+  echo "Зупиняємо та видаляємо контейнер..."
+  docker ps -a --filter "ancestor=nezha123/titan-edge" --format "{{.ID}}" | while read container_id; do
+    docker stop "$container_id"
+    docker rm "$container_id"
+  done
 
-while true; do
+  echo "Видаляємо директорію ~/.titanedge"
+  rm -rf ~/.titanedge
+
+  echo "Ноду повністю видалено."
+}
+
+main_menu() {
+  channel_logo
   echo -e "\nМеню:"
   echo "1. Встановити ноду"
   echo "2. Запустити ноду"
-  echo "3. Вийти"
-  read -p "Оберіть опцію [1-3]: " choice
+  echo "3. Видалити ноду"
+  echo "4. Вийти"
 
+  read -p "Оберіть пункт меню: " choice
   case $choice in
-    1)
-      download_node
-      ;;
-    2)
-      launch_node
-      ;;
-    3)
-      echo "Вихід..."
-      exit 0
-      ;;
-    *)
-      echo "Невірна опція. Спробуйте ще раз."
-      ;;
+    1) download_node ;;
+    2) launch_node ;;
+    3) delete_node ;;
+    4) exit 0 ;;
+    *) echo "Невірний вибір. Спробуйте ще раз." ; main_menu ;;
   esac
+}
 
-done
+main_menu
