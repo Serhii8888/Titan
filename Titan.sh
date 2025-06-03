@@ -10,7 +10,7 @@ download_node() {
     return 0
   fi
 
-  sudo apt install lsof
+  sudo apt install lsof -y
 
   ports=(1234 55702 48710)
 
@@ -22,7 +22,6 @@ download_node() {
   done
 
   echo -e "Всі порти вільні! Починається встановлення...\n"
-
   echo 'Починаю встановлення...'
 
   cd $HOME
@@ -64,10 +63,38 @@ launch_node() {
     echo 'HASH не може бути порожнім.'
   done
 
-  docker run --network=host -d -v ~/.titanedge:$HOME/.titanedge nezha123/titan-edge
+  docker run --network=host -d -v $HOME/.titanedge:$HOME/.titanedge nezha123/titan-edge
   sleep 10
 
-  docker run --rm -it -v ~/.titanedge:$HOME/.titanedge nezha123/titan-edge bind --hash=$HASH https://api-test1.container1.titannet.io/api/v2/device/binding
+  docker run --rm -it -v $HOME/.titanedge:$HOME/.titanedge nezha123/titan-edge bind --hash=$HASH https://api-test1.container1.titannet.io/api/v2/device/binding
 
   echo -e "Ноду запущено."
 }
+
+clear
+channel_logo
+
+while true; do
+  echo -e "\nМеню:"
+  echo "1. Встановити ноду"
+  echo "2. Запустити ноду"
+  echo "3. Вийти"
+  read -p "Оберіть опцію [1-3]: " choice
+
+  case $choice in
+    1)
+      download_node
+      ;;
+    2)
+      launch_node
+      ;;
+    3)
+      echo "Вихід..."
+      exit 0
+      ;;
+    *)
+      echo "Невірна опція. Спробуйте ще раз."
+      ;;
+  esac
+
+done
